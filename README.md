@@ -1,4 +1,4 @@
-# Radar Database
+# Nexpull
 
 [![forthebadge](https://forthebadge.com/images/badges/made-with-go.svg)](https://forthebadge.com)
 
@@ -24,12 +24,11 @@
 2. Sign into Docker
 3. Open a command line prompt
 4. Run `docker login`
-5. Run `docker pull zachdehooge/radar-database`
-6. Run `docker run -it --rm -v .:/app zachdehooge/radar-database`
+5. Run `docker pull zachdehooge/nexpull`
+6. Run `docker run -it --rm -v .:/app zachdehooge/nexpull`
 
 ## Issues
 * Be sure to open an issue and I will be more than happy to fix it!
 
 ## Roadmap
-1. Give user the option to download all of the current days RADNEX archive without needing to prompt for time frame
-2. More to come...
+1. More to come...

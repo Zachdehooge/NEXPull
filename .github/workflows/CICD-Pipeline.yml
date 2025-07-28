@@ -45,14 +45,9 @@ jobs:
           echo "Running unit tests..."
 
           go mod download
-          go test radar-database_test.go
+          go test nexpull_test.go
           echo "Unit Tests Complete"
 
-      - name: Python Hello World
-        shell: python
-        run: |
-          print("Hello World ")
-          
       - name: Github Workspace Name
         run: |
           echo ${{ github.workspace }}
@@ -113,9 +108,9 @@ jobs:
       # Build Docker Image
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/radar-database:${{ steps.docker_tag.outputs.tag }} .
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/nexpull:${{ steps.docker_tag.outputs.tag }} .
 
       # Push Docker image
       - name: Push Docker image
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/radar-database:${{ steps.docker_tag.outputs.tag }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/nexpull:${{ steps.docker_tag.outputs.tag }}

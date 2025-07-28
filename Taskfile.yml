@@ -4,11 +4,11 @@ tasks:
   run:
     desc: Runs the GO application
     cmds: 
-      - go run radar-database.go
+      - go run nexpull.go
   build:
     desc: Builds The GO Binary
     cmds:
-      - go build -o radar-database radar-database.go
+      - go build -o nexpull nexpull.go
   test:
     desc: Runs Tests For Application
     cmds:
@@ -16,4 +16,4 @@ tasks:
   install:
     desc: Install the go binary on the system
     cmds:
-      - go install radar-database.go
+      - go install nexpull.go
