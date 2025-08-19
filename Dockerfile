@@ -1,4 +1,4 @@
-FROM golang:1.25rc1-bookworm
+FROM golang:1.25.0-bookworm
 
 WORKDIR /app
 
