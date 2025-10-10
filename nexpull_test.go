@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-// Test to ensure http response from NWS server db containing the Lvl 2 data is still alive and produces the radar data specified by the user. In this test case (December 20th 2020 on the KHTX radar at 000212 zulu) was assessed
+// Test to ensure http response from NWS server db containing the Lvl 2 data is still alive and produces the radar data specified by the user. In this test case, the date of: December 20th 2020 on the KHTX radar at 000212 zulu, was assessed
 
 func mainTesting() int {
 
@@ -68,7 +68,7 @@ func mainTesting() int {
 	return 0
 }
 
-func TestMain(t *testing.T) {
+func TestMainTesting(t *testing.T) {
 	expected := mainTesting()
 	want := 0
 
