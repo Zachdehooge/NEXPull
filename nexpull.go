@@ -2,16 +2,14 @@ package main
 
 import (
 	"bufio"
+	"encoding/xml"
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
-
-	"github.com/PuerkitoBio/goquery"
 )
 
 type downloadProgress struct {
@@ -19,6 +17,12 @@ type downloadProgress struct {
 	current  int
 	lastFile string
 	mu       sync.Mutex
+}
+
+type ListBucketResult struct {
+	Contents []struct {
+		Key string `xml:"Key"`
+	} `xml:"Contents"`
 }
 
 func newDownloadProgress(total int) *downloadProgress {
@@ -47,33 +51,23 @@ func (dp *downloadProgress) printProgress() {
 
 func fetchDownloadLinks(radarURL string) ([]string, error) {
 	resp, err := http.Get(radarURL)
-	if err != nil {
-		return nil, err
-	}
 	defer resp.Body.Close()
 
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	body, _ := io.ReadAll(resp.Body)
+
+	var result ListBucketResult
+	err = xml.Unmarshal(body, &result)
 	if err != nil {
-		return nil, err
+		panic(err)
 	}
 
 	var links []string
-	doc.Find("div.bdpLink a").Each(func(i int, s *goquery.Selection) {
-		href, exists := s.Attr("href")
-		if exists {
-			absoluteURL := resolveURL(radarURL, href)
-			links = append(links, absoluteURL)
-		}
-	})
+	for _, item := range result.Contents {
+		url := "https://unidata-nexrad-level2.s3.amazonaws.com/" + item.Key
+		links = append(links, url)
+	}
 
 	return links, nil
-}
-
-func resolveURL(baseURL, link string) string {
-	base, _ := url.Parse(baseURL)
-	relative, _ := url.Parse(link)
-	resolvedURL := base.ResolveReference(relative)
-	return resolvedURL.String()
 }
 
 func downloadFile(url string, outputDir string, progress *downloadProgress, wg *sync.WaitGroup) {
@@ -109,7 +103,7 @@ func downloadFiles(links []string, outputDir string) []string {
 	var wg sync.WaitGroup
 	progress := newDownloadProgress(len(links))
 
-	// Increased number of workers to 50
+	// 50 Workers
 	maxConcurrent := 50
 	semaphore := make(chan struct{}, maxConcurrent)
 	var mu sync.Mutex
@@ -130,7 +124,7 @@ func downloadFiles(links []string, outputDir string) []string {
 	}
 
 	wg.Wait()
-	fmt.Println() // New line after progress
+	fmt.Println()
 
 	return downloadedFiles
 }
@@ -148,19 +142,22 @@ func main() {
 	day := promptInput("Enter day (15): ")
 	year := promptInput("Enter year (2025): ")
 
-	url := fmt.Sprintf("https://www.ncdc.noaa.gov/nexradinv/bdp-download.jsp?id=%s&yyyy=%s&mm=%s&dd=%s&product=AAL2",
-		radar, year, month, day)
+	/*
+	 !Search for Files - https://unidata-nexrad-level2.s3.amazonaws.com/?prefix=2020/03/20/KHTX/
+	 !Download URL https://unidata-nexrad-level2.s3.amazonaws.com/2025/03/15/KHTX/KHTX20250315_001350_V06
+	*/
 
-	outputDir := fmt.Sprintf("%s_%s_%s_%s", radar, year, month, day)
+	baseURL := fmt.Sprintf("https://unidata-nexrad-level2.s3.amazonaws.com/?prefix=%s/%s/%s/%s/", year, month, day, strings.ToUpper(radar))
+
+	outputDir := fmt.Sprintf("%s_%s_%s_%s", strings.ToUpper(radar), year, month, day)
 	err := os.MkdirAll(outputDir, 0755)
 	if err != nil {
 		fmt.Printf("Error creating directory: %v\n", err)
 		return
 	}
 
-	links, err := fetchDownloadLinks(url)
+	links, err := fetchDownloadLinks(baseURL)
 	if err != nil {
-		fmt.Printf("Error fetching download links: %v\n", err)
 		return
 	}
 
